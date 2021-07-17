@@ -24,6 +24,7 @@ const listItems = [];
 let dragStartIndex;
 
 function createList(){
+    const documentFragment = new DocumentFragment();
     [...richestPeople]
     .map((person) => ({ value: person, sort: Math.random() }))
     .sort((a, b) => a.sort - b.sort)
@@ -42,8 +43,9 @@ function createList(){
             </div>
             `;
       listItems.push(listItem);
-      draggable_list.appendChild(listItem);
+      documentFragment.appendChild(listItem);
     })
+    draggable_list.appendChild(documentFragment);
     addEventListeners();
 }
 
@@ -58,28 +60,57 @@ function addEventListeners(){
     })
     dragListItems.forEach(item =>{
         item.addEventListener('dragover', dragOver);
-        item.addEventListener('drag', dragDrop);
+        item.addEventListener('drop', dragDrop);
         item.addEventListener('dragenter', dragEnter);
         item.addEventListener('dragleave', dragLeave);
     })
 }
 
-function dragStart(){
-    console.log('Event : start');
-}
-
-function dragOver(){
-    console.log('Event : over');
-}
-
-function dragDrop(){
-    console.log('Event : drop');
-}
-
 function dragEnter(){
-    console.log('Event : Enter');
+    this.classList.add('over');
 }
 
 function dragLeave(){
-    console.log('Event : Leave');
+    this.classList.remove('over')
+}
+
+function dragStart(){
+    dragStartIndex = +this.closest('li').getAttribute('data-index');
+    console.log({dragStartIndex});
+}
+
+function dragDrop(){
+    const dragEndIndex = +this.closest('li').getAttribute('data-index');
+    console.log({dragEndIndex});
+
+    // swap items
+    swap(dragStartIndex, dragEndIndex);
+    this.classList.remove('over');
+}
+
+function dragOver(e){
+    e.preventDefault();
+}
+
+function swap(fromIndex, toIndex){
+    const itemOne = listItems[fromIndex].querySelector('.draggable');
+    const itemTwo = listItems[toIndex].querySelector('.draggable');
+
+    listItems[fromIndex].appendChild(itemTwo);
+    listItems[toIndex].appendChild(itemOne);
+}
+
+check.addEventListener("click", checkOrder);
+
+function checkOrder(){
+    listItems.forEach((listItem, index) =>{
+        const personName = listItem.querySelector('.draggable').innerText.trim();
+        if(personName !== richestPeople[index]){
+            listItem.classList.add('wrong')
+        }
+        else{
+            listItem.classList.remove('wrong');
+            listItem.classList.add('right');
+        }
+    })
 }
